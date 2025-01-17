@@ -61,6 +61,6 @@ TOKEN=xyzxyz
 POSTGRES_USER and POSTGRES_PASSWORD it's a new Root Role in Postgres image, you can use the values that you want.
 TOKEN is the same String that Vault retrieved when you did `vault init operator...`, it's the Initial Root Token.
 
-3. You have all you need to initialize docker-compose file. Execute `docker-compose up -d` (if you want to see logs in real time, remote `-d` parameter). Nice! You can use L-Airline API
+3. You have all you need to initialize docker-compose file. Execute `docker-compose up -d` (if you want to see logs in real time, remove `-d` parameter). Nice! You can use L-Airline API
 
 If you have problems with your configuration, or have some recommendations, communicate with me to lautaromartinvillalba@gmail.com.
