@@ -1,6 +1,6 @@
 ### Vault configuration
 1. Execute `docker-compose up vault-custom -d` to initialize the Vault container. 
-2. Execute `docker-compose exec vault-custom` to access the vualt-custom container.
+2. Execute `docker-compose exec vault-custom sh` to access the vualt-custom container.
 3. Execute `vault operator init -key-shares=3 -key-threshold=3` to initialize Vault . You will recieve a message like this:
 ```
 Unseal Key 1: xxxxxx
