@@ -1,0 +1,93 @@
+services:
+  database:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    container_name: database
+    volumes:
+      - postgres_persist:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_USER}
+      POSTGRES_DB: airline
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "airline" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      airline_net:
+
+  vault-custom:
+    image: lautaromvillalba/custom-vault
+    container_name: vault-custom
+    environment:
+      VAULT_ADDR: http://vault-custom:8200
+    volumes:
+      - vault_persist:/vault/file:rw
+      - ./vault:/vault/config:rw
+    cap_add:
+      - IPC_LOCK
+    entrypoint: /bin/sh -c "vault server -config=/vault/config/config.json & /vault/config/unseal.sh; wait $!"
+    networks:
+      airline_net:
+
+  eureka:
+    image: lautaromvillalba/eureka:v1
+    container_name: eureka
+    ports:
+      - "8761:8761"
+    networks:
+      airline_net:
+
+  gateway:
+    image: lautaromvillalba/gateway:v1
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
+    networks:
+      airline_net:
+
+  jwt-user:
+    image: lautaromvillalba/user:v1.1
+    container_name: jwt-user
+    depends_on:
+      - gateway
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
+      - spring.cloud.vault.token= ${TOKEN}
+    networks:
+      airline_net:
+
+  hotel:
+    image: lautaromvillalba/hotel:v1
+    container_name: hotel
+    depends_on:
+      - gateway
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
+      - spring.cloud.vault.token= ${TOKEN}
+    networks:
+      airline_net:
+
+  flight:
+    image: lautaromvillalba/flight:v1
+    container_name: flight
+    depends_on:
+      - gateway
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
+      - spring.cloud.vault.token= ${TOKEN}
+    networks:
+      airline_net:
+
+volumes:
+  postgres_persist:
+  vault_persist:
+
+networks:
+  airline_net:
