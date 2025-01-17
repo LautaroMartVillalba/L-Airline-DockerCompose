@@ -1,0 +1,17 @@
+{
+  "storage":{
+    "file":{
+      "path":"/vault/file"
+    }
+  },
+  "listener":{
+    "tcp":{
+      "address":"vault-custom:8200",
+      "tls_disable":1
+    }
+  },
+  "default_lease_ttl":"168h",
+  "api_addr": "http://vault-custom:8200",
+  "max_lease_ttl":"0h",
+  "ui":true
+}
