@@ -1,6 +1,7 @@
 services:
-  database:
-    image: postgres
+# # ---------------POSTGRES-----------------
+  postgres:
+    image: lautaromvillalba/postgres-custom:v1.1
     restart: always
     shm_size: 128mb
     container_name: database
@@ -18,6 +19,21 @@ services:
     networks:
       airline_net:
 
+# ---------------NEO4J-----------------
+  neo4j:
+    image: neo4j
+    container_name: neo4j
+    volumes:
+      - neo4j_persist:/data
+    environment:
+      - NEO4J_AUTH=${NEO4JDB}/${NEO4JPASS} 
+# NOE4JDB and NEO4JPASS be the same credentias created in Vault
+      - NEO4J_dbms_default__listen__address=0.0.0.0
+      - NEO4J_dbms_default__advertised__address=neo4j
+    networks:
+      airline_net:
+
+# ---------------VAULT-----------------
   vault-custom:
     image: lautaromvillalba/custom-vault
     container_name: vault-custom
@@ -32,53 +48,57 @@ services:
     networks:
       airline_net:
 
+# ---------------EUREKA-----------------
   eureka:
-    image: lautaromvillalba/eureka:v1
+    image: lautaromvillalba/eureka:v1.2
     container_name: eureka
     ports:
       - "8761:8761"
     networks:
       airline_net:
 
+# ---------------GATEWAY-----------------
   gateway:
-    image: lautaromvillalba/gateway:v1
+    image: lautaromvillalba/gateway:1.2
     container_name: gateway
-    ports:
-      - "8080:8080"
-    depends_on:
-      - eureka
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
+      - spring.cloud.vault.token=${TOKEN}
+      - spring.cloud.vault.host=vault-custom
+      - spring.cloud.vault.port=8200
+      - spring.cloud.vault.scheme=http
+      - spring.cloud.vault.authentication=TOKEN
+      - spring.cloud.vault.kv.backend=kv
+      - spring.cloud.vault.kv.default-context=database
+      - spring.cloud.vault.kv.application-name=database
+      - spring.cloud.vault.kv.enabled=true
     networks:
       airline_net:
 
+# ---------------JWT-USER-----------------
   jwt-user:
     image: lautaromvillalba/user:v1.1
     container_name: jwt-user
-    depends_on:
-      - gateway
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
       - spring.cloud.vault.token= ${TOKEN}
     networks:
       airline_net:
 
+# ---------------HOTEL-----------------
   hotel:
     image: lautaromvillalba/hotel:v1
     container_name: hotel
-    depends_on:
-      - gateway
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
       - spring.cloud.vault.token= ${TOKEN}
     networks:
       airline_net:
 
+# ---------------FLIGHT-----------------
   flight:
-    image: lautaromvillalba/flight:v1
+    image: lautaromvillalba/flight:v2.4
     container_name: flight
-    depends_on:
-      - gateway
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
       - spring.cloud.vault.token= ${TOKEN}
@@ -88,6 +108,7 @@ services:
 volumes:
   postgres_persist:
   vault_persist:
+  neo4j_persist:
 
 networks:
   airline_net:
