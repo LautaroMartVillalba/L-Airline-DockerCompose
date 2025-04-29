@@ -1,7 +1,7 @@
 services:
 # # ---------------POSTGRES-----------------
   postgres:
-    image: lautaromvillalba/postgres-custom:v1.1
+    image: lautaromvillalba/postgres-custom:v1
     restart: always
     shm_size: 128mb
     container_name: database
@@ -21,13 +21,15 @@ services:
 
 # ---------------NEO4J-----------------
   neo4j:
-    image: neo4j
+    image: lautaromvillalba/neo4j-custom:v1
     container_name: neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
     volumes:
       - neo4j_persist:/data
     environment:
-      - NEO4J_AUTH=${NEO4JDB}/${NEO4JPASS} 
-# NOE4JDB and NEO4JPASS be the same credentias created in Vault
+      - NEO4J_AUTH=${NEO4JDB}/${NEO4JPASS}
       - NEO4J_dbms_default__listen__address=0.0.0.0
       - NEO4J_dbms_default__advertised__address=neo4j
     networks:
@@ -59,8 +61,10 @@ services:
 
 # ---------------GATEWAY-----------------
   gateway:
-    image: lautaromvillalba/gateway:1.2
+    image: lautaromvillalba/gateway:v1.2
     container_name: gateway
+    ports:
+      - "8080:8080"
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
       - spring.cloud.vault.token=${TOKEN}
@@ -77,7 +81,7 @@ services:
 
 # ---------------JWT-USER-----------------
   jwt-user:
-    image: lautaromvillalba/user:v1.1
+    image: lautaromvillalba/user:V1.3
     container_name: jwt-user
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
@@ -87,7 +91,7 @@ services:
 
 # ---------------HOTEL-----------------
   hotel:
-    image: lautaromvillalba/hotel:v1
+    image: lautaromvillalba/hotel:v1.3
     container_name: hotel
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
@@ -97,7 +101,7 @@ services:
 
 # ---------------FLIGHT-----------------
   flight:
-    image: lautaromvillalba/flight:v2.4
+    image: flightprueba
     container_name: flight
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
