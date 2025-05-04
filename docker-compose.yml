@@ -101,7 +101,7 @@ services:
 
 # ---------------FLIGHT-----------------
   flight:
-    image: flightprueba
+    image: lautaromvillalba/flight:v2.10
     container_name: flight
     environment:
       - eureka.client.serviceUrl.defaultZone=http://eureka:8761/eureka/
